@@ -4,7 +4,7 @@
 
 - Use a cleanup function with `useEffect` to stop background processes
 
-## Introduction
+## Overview
 
 In the last lesson, we saw how to run functions as **side effects** of rendering
 our components by using the `useEffect` hook. Here, we'll discuss best practices
@@ -18,7 +18,7 @@ long-running code that you no longer need once the component is removed from the
 page. Here's an example of a component that runs a timer in the background
 continuously:
 
-```jsx
+```js
 function Clock() {
   const [time, setTime] = useState(new Date());
 
@@ -38,7 +38,7 @@ time.
 
 We could use this Clock component like so:
 
-```jsx
+```js
 function App() {
   const [showClock, setShowClock] = useState(true);
 
@@ -71,12 +71,12 @@ from the DOM, the `setInterval` function we called in `useEffect` is **still
 running in the background**, and updating state every second.
 
 React's solution is to have our `useEffect` function **return a cleanup
-function**, which will run when the component is unmounted, i.e., when it is no
-longer being returned by its parent.
+function**, which will run after the component "un-mounts": when it is removed
+from the DOM after its parent component no longer returns it.
 
 Here's how the cleanup function would look:
 
-```jsx
+```js
 function Clock() {
   const [time, setTime] = useState(new Date());
 
@@ -97,7 +97,7 @@ function Clock() {
 
 If you run this app again in the browser, and click the "Toggle Clock" button,
 you'll notice we no longer get that error message. That's because we have
-successfully cleaned up after the unmounted component by running
+successfully cleaned up after our interval is no longer needed by running
 `clearInterval`.
 
 ## Cleanup Function Lifecycle
@@ -108,19 +108,13 @@ So far, we've explained the order of operations for our components like this:
 render -> useEffect -> setState -> re-render -> useEffect
 ```
 
-Where does the cleanup function fit in this order of operations? In general,
-it is called by React **after the component re-renders** as a result of setting
-state and **before the `useEffect` callback is called**:
+Where does the cleanup function fit in this order of operations? It is called by
+React **after the component re-renders** after setting state and **before the
+`useEffect` callback is called**, or **before the component is removed from the
+page** if it is no longer being returned by a parent component:
 
 ```txt
 render -> useEffect -> setState -> re-render -> cleanup -> useEffect
-```
-
-If the change (as in our example) causes the component to be unmounted,
-the cleanup is the last thing that occurs in the component's life:
-
-```txt
-render -> useEffect -> setState -> re-render -> cleanup
 ```
 
 Here's a way to visualize the different parts of the component lifecycle:
@@ -129,15 +123,8 @@ Here's a way to visualize the different parts of the component lifecycle:
 
 You can also check out this
 [CodeSandbox](https://codesandbox.io/s/react-hooks-lifecycle-wbgz1) example to
-visualize the component lifecycle. The code includes a series of calls to
-`useEffect` that log messages to the console. If you open the browser console,
-you can see the sequence of events that happens when the page first loads. Then,
-if you try clicking the buttons, the order of the logged messages will show the
-order in which the different stages occur. Note that, for each component
-(`Parent` and `Child`), there are three different `useEffect` calls: one with no
-dependencies array, one with an empty array, and one with `count` as a
-dependency. This enables you to see when `useEffect` and `cleanup` are called
-for each of the three options.
+visualize the component lifecycle by updating state in the example components,
+and viewing the output in the console.
 
 ## Conclusion
 
